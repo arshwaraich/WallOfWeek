@@ -20,9 +20,9 @@ app.get('/', (req,res) =>{
         console.log('error:', error);
         console.log('statusCode:', response && response.statusCode);
         bodyJSON = JSON.parse(body);
+        
+        request(bodyJSON.data.children[0].data.url).pipe(res);
     });
-
-    request(bodyJSON.data.children[0].data.url).pipe(res);
 })
 
 app.listen(HTTP_PORT, onHttpStart);
