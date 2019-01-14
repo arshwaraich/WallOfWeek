@@ -9,20 +9,37 @@ function onHttpStart() {
     console.log("Express http server listening on: " + HTTP_PORT);
 }
 
+//API request
+var url;
 
-//Default path
-app.get('/', (req,res) =>{
-
-    //API request
+function apiCall(dur) {
     var bodyJSON;
 
-    request('https://www.reddit.com/r/wallpapers/top.json?t=week&limit=1', (error, response, body) => {
-        console.log('error:', error);
-        console.log('statusCode:', response && response.statusCode);
-        bodyJSON = JSON.parse(body);
+	return new Promise(function(resolve, reject) {
+    		request('https://www.reddit.com/r/wallpapers/top.json?t=' + dur + '&limit=1', (error, response, body) => {
+	        	console.log('error:', error);
+        		console.log('statusCode:', response && response.statusCode);
+        		bodyJSON = JSON.parse(body);
         
-        request(bodyJSON.data.children[0].data.url).pipe(res);
-    });
-})
+       		 	url = bodyJSON.data.children[0].data.url;
+    			resolve();
+		});
+	});
+}
+
+//Default path
+app.get('/', (req,res) => {
+	apiCall('week')
+	.then(()=> {
+		request(url).pipe(res);
+	});
+});
+
+app.get('/:duration', (req,res) =>{
+	apiCall(req.params.duration)
+	.then(()=> {
+		request(url).pipe(res);
+	});
+});
 
 app.listen(HTTP_PORT, onHttpStart);
